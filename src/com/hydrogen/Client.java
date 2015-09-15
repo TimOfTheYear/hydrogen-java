@@ -55,7 +55,7 @@ public class Client {
         this.implementor.onConnected();
     }
 
-    public void write(Vector<Byte> buffer) {
+    public void write(final byte[] buffer) {
         new Thread() {
             @Override
             public void run() {

@@ -87,13 +87,13 @@ public class Bstream {
         return buffer.get(0);
     }
 
-    public void write(Vector<Byte> buffer) throws WriteException {
-        byte[] nBuffer = new byte[buffer.size() + 2];
-        nBuffer[0] = (byte) (buffer.size() & 0xFFFF << 8);
-        nBuffer[1] = (byte) (buffer.size() & 0xFFFF);
+    public void write(byte[] buffer) throws WriteException {
+        byte[] nBuffer = new byte[buffer.length + 2];
+        nBuffer[0] = (byte) (buffer.length & 0xFFFF << 8);
+        nBuffer[1] = (byte) (buffer.length & 0xFFFF);
 
-        for (int x = 0; x < buffer.size(); x++) {
-            nBuffer[x + 2] = buffer.get(x);
+        for (int x = 0; x < buffer.length; x++) {
+            nBuffer[x + 2] = buffer[x];
         }
 
         try {
