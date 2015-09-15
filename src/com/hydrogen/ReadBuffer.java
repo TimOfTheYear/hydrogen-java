@@ -46,9 +46,12 @@ public class ReadBuffer {
     }
 
     public void calcPayloadLen() {
-        int len = 0;
-        len = len | this.cBuffer.get(0);
-        len = (len << 8) | this.cBuffer.get(1);
+        // Old method:
+        //        int len = 0;
+        //        len = len | this.cBuffer.get(0);
+        //        len = (len << 8) | this.cBuffer.get(1);
+
+        int len = this.cBuffer.get(0) << 8 | (this.cBuffer.get(1) & 0xFF);
         this.cMessage.len = len;
     }
 
