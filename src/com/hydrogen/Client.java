@@ -13,7 +13,6 @@ package com.hydrogen;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Vector;
 
 public class Client {
 
@@ -100,7 +99,7 @@ public class Client {
         public void run() {
             while (keepAlive) {
                 try {
-                    Vector<Byte> buffer = stream.read();
+                    byte[] buffer = stream.read();
                     implementor.onDataReceived(buffer);
                 } catch (ReadException e) {
                     implementor.onError(e);

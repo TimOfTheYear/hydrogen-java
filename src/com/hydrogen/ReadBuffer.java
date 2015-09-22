@@ -11,7 +11,7 @@
 
 package com.hydrogen;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class ReadBuffer {
     // Current message
@@ -19,16 +19,16 @@ public class ReadBuffer {
     // Current bytes remaining for next read
     private int cRemaining;
     // Current buffer
-    private Vector<Byte> cBuffer;
+    private ArrayList<Byte> cBuffer;
     // Queue of messages created during last read
-    private Vector<Message> queue;
+    private ArrayList<Message> queue;
 
 
     public ReadBuffer() {
         this.cMessage = new Message();
         this.cRemaining = 2;
-        this.cBuffer = new Vector<>(this.cRemaining);
-        this.queue = new Vector<>();
+        this.cBuffer = new ArrayList<>(this.cRemaining);
+        this.queue = new ArrayList<>();
     }
 
     public int remaining() {
@@ -42,7 +42,7 @@ public class ReadBuffer {
 
     public void setCapacity(int size) {
         this.cRemaining = size;
-        this.cBuffer = new Vector<>(this.cRemaining);
+        this.cBuffer = new ArrayList<>(this.cRemaining);
     }
 
     public void calcPayloadLen() {
@@ -60,28 +60,28 @@ public class ReadBuffer {
     }
 
     public void reset() {
-        this.cMessage.payload = (Vector) this.cBuffer.clone();
+        this.cMessage.payload = (ArrayList) this.cBuffer.clone();
         this.queue.add(this.cMessage.clone());
         this.cMessage = new Message();
         this.cRemaining = 2;
-        this.cBuffer = new Vector<>(this.cRemaining);
+        this.cBuffer = new ArrayList<>(this.cRemaining);
     }
 
     public int queueLen() {
         return this.queue.size();
     }
 
-    public Vector<Message> queueAsMut() {
+    public ArrayList<Message> queueAsMut() {
         return this.queue;
     }
 
-    public Vector<Vector<Byte>> drainQueue() {
-        Vector<Vector<Byte>> buffer = new Vector<>(this.queue.size());
+    public ArrayList<ArrayList<Byte>> drainQueue() {
+        ArrayList<ArrayList<Byte>> buffer = new ArrayList<>(this.queue.size());
         for (int x = 0; x < this.queue.size(); x++) {
-            Vector<Byte> payload = (Vector) this.queue.get(x).payload.clone();
+            ArrayList payload = (ArrayList)this.queue.get(x).payload.clone();
             buffer.add(payload);
         }
-        this.queue = new Vector<>();
+        this.queue = new ArrayList<>();
         return buffer;
     }
 }

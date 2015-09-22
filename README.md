@@ -6,7 +6,7 @@ Java based Hydrogen client
 
 ~~~java
 
-public class Main implements IHydrogen
+public class Main
 {
 	public static void main(String [] args)	{
 		Client client = new Client(hydrogenImplementor);
@@ -19,14 +19,18 @@ public class Main implements IHydrogen
         }
 
         // Some buffer
-        Vector<Byte> buffer = new Vector<>();
-        buffer.add((byte)'p');
-        buffer.add((byte)'i');
-        buffer.add((byte)'n');
-        buffer.add((byte)'g');
+        byte[] buffer = new byte[4];
+		buffer[0] = (byte)'p';
+		buffer[1] = (byte)'i';
+		buffer[2] = (byte)'n';
+		buffer[3] = (byte)'g';
 
         // Send a thing
         client.write(buffer);
+
+		while (true) {
+			// Do all the things
+		}
 
         // Disconnect from host
         client.disconnect();
@@ -45,7 +49,7 @@ public class Main implements IHydrogen
             // Called when an error has occured
         }
 
-        public void onDataReceived(Vector<Byte> buffer) {
+        public void onDataReceived(byte[] buffer) {
             // Called when data has been received from host
         }
     };

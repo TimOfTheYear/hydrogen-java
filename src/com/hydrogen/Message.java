@@ -11,22 +11,21 @@
 
 package com.hydrogen;
 
-
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class Message {
     public int len;
-    public Vector<Byte> payload;
+    public ArrayList<Byte> payload;
 
     public Message() {
         this.len = 2;
-        this.payload = new Vector<>();
+        this.payload = new ArrayList<>();
     }
 
     public Message clone() {
         Message msg = new Message();
         msg.len = this.len;
-        msg.payload = (Vector) this.payload.clone();
+        msg.payload = (ArrayList) this.payload.clone();
         return msg;
     }
 }

@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.Vector;
+import java.util.ArrayList;
 
 public class Bstream {
 
@@ -44,8 +44,17 @@ public class Bstream {
         }
     }
 
-    public Vector<Byte> read() throws ReadException {
+    public byte[] read() throws ReadException {
         while (true) {
+            try {
+                final int bytes_avail = this.inputStream.available();
+                if (bytes_avail < 1) {
+                    continue;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             int numRead = 0;
             int count = this.buffer.remaining();
             byte[] buffer = new byte[count];
@@ -79,45 +88,65 @@ public class Bstream {
             }
         }
 
-        Vector<Vector<Byte>> buffer = this.buffer.drainQueue();
+        ArrayList<ArrayList<Byte>> buffer = this.buffer.drainQueue();
         if (buffer.size() != 1) {
             throw new ReadException(ReadException.BUF);
         }
 
-        return buffer.get(0);
+        byte[] rBuffer = new byte[buffer.get(0).size()];
+        ArrayList<Byte> tBuffer = buffer.get(0);
+        for (int x = 0; x < rBuffer.length; x++) {
+            Byte tByte = tBuffer.get(x);
+            if (tByte == null)
+            {
+                throw new ReadException(ReadException.NULLVAL);
+            }
+            rBuffer[x] = (byte)tByte;
+        }
+
+
+        return rBuffer;
     }
 
     public void write(byte[] buffer) throws WriteException {
         byte[] nBuffer = new byte[buffer.length + 2];
-        nBuffer[0] = (byte) (buffer.length & 0xFFFF << 8);
-        nBuffer[1] = (byte) (buffer.length & 0xFFFF);
+        nBuffer[0] = (byte)(buffer.length >> 8);
+        nBuffer[1] = (byte)buffer.length;
+
 
         for (int x = 0; x < buffer.length; x++) {
+            System.out.println((char)buffer[x]);
             nBuffer[x + 2] = buffer[x];
         }
 
         try {
             this.outputStream.write(nBuffer);
         } catch (IOException e) {
+            e.printStackTrace();
             throw new WriteException("Error writing to output stream");
         }
 
         try {
             this.outputStream.flush();
         } catch (IOException e) {
+            e.printStackTrace();
             throw new WriteException("Error flushing output stream");
         }
     }
 
     public void cleanup() throws IOException {
         if (!this.stream.isInputShutdown()) {
-            this.stream.shutdownInput();
-            this.inputStream.close();
+            if (!this.stream.isClosed()) {
+                this.stream.shutdownInput();
+                this.inputStream.close();
+            }
         }
 
         if (!this.stream.isOutputShutdown()) {
-            this.stream.shutdownOutput();
-            this.outputStream.close();
+            if (!this.stream.isClosed()) {
+                this.stream.shutdownOutput();
+                this.outputStream.close();
+            }
         }
 
         if (!this.stream.isClosed()) {

@@ -11,7 +11,6 @@
 
 package com.hydrogen;
 
-import java.util.Vector;
 
 public interface IHydrogen {
     void onConnected();
@@ -20,5 +19,5 @@ public interface IHydrogen {
 
     void onError(Exception e);
 
-    void onDataReceived(Vector<Byte> buffer);
+    void onDataReceived(byte[] buffer);
 }
