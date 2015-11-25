@@ -12,6 +12,8 @@
 package com.hydrogen;
 
 public enum ReadState {
+    Start,
     PayloadLen,
-    Payload
+    Payload,
+    End
 }

@@ -11,16 +11,17 @@
 
 package com.hydrogen;
 
+
 import java.io.IOException;
 import java.net.Socket;
 
 public class Client {
 
-    private Bstream stream;
+    private com.hydrogen.Bstream stream;
     private ReaderThread readerThread;
-    private IHydrogen implementor;
+    private com.hydrogen.IHydrogen implementor;
 
-    public Client(IHydrogen implementor) {
+    public Client(com.hydrogen.IHydrogen implementor) {
         this.implementor = implementor;
     }
 
@@ -38,7 +39,7 @@ public class Client {
         }
 
         try {
-            this.stream = new Bstream(socket);
+            this.stream = new com.hydrogen.Bstream(socket);
         } catch (Exception e) {
             e.printStackTrace();
             throw new IOException(e);
@@ -60,7 +61,7 @@ public class Client {
             public void run() {
                 try {
                     stream.write(buffer);
-                } catch (WriteException e) {
+                } catch (com.hydrogen.WriteException e) {
                     implementor.onError(e);
                     disconnect();
                 }
@@ -101,7 +102,7 @@ public class Client {
                 try {
                     byte[] buffer = stream.read();
                     implementor.onDataReceived(buffer);
-                } catch (ReadException e) {
+                } catch (com.hydrogen.ReadException e) {
                     implementor.onError(e);
                     this.keepAlive = false;
                     return;
