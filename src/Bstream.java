@@ -235,9 +235,9 @@ public class Bstream {
     }
 
     private int payload_length() {
-        final int mask = 0xFFFF;
-        int len = (this.buffer.get(1) << 8) & mask;
-        len = len | this.buffer.get(2);
-        return len;
+        return 0x00 << 24
+            | 0x00 << 16
+            | (this.buffer.get(1) & 0xFF) << 8
+            | (this.buffer.get(2) & 0xFF);
     }
 }
