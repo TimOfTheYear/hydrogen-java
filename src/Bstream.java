@@ -114,8 +114,7 @@ public class Bstream {
         nBuffer[1] = (byte)(buffer.length >> 8);
         nBuffer[2] = (byte)buffer.length;
         for (int x = 0; x < buffer.length; x++) {
-            System.out.println((char)buffer[x]);
-            nBuffer[x + 2] = buffer[x];
+            nBuffer[x + 3] = buffer[x];
         }
         nBuffer[nBuffer.length - 1] = END;
 
@@ -158,7 +157,7 @@ public class Bstream {
         byte[] newBuf = new byte[buf.length + this.scratch.size()];
         int x = 0;
         for (x = 0; x < this.scratch.size(); x++) {
-            newBuf[x] = this.scratch.get(x);
+            newBuf[x] = (byte)this.scratch.get(x);
         }
         for (int y = 0; y < buf.length; y++) {
             newBuf[y + x] = buf[y];
