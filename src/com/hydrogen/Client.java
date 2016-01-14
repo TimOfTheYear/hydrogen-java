@@ -33,13 +33,13 @@ public class Client {
         this.implementor = implementor;
     }
 
-    public void connectToHost(String host, int port, boolean useSSL) throws IOException, NullPointerException {
+    public void connectToHost(String host, int port, boolean useSSL) throws Exception {
         if (this.implementor == null) {
             throw new NullPointerException("IHydrogen implementor was null");
         }
 
         if (useSSL) {
-            // Not implemented
+            throw new Exception("SSL not yet available");
         } else {
             try {
                 Socket socket = new Socket(host, port);
