@@ -1,3 +1,11 @@
+// Copyright 2015 Nathan Sizemore <nathanrsizemore@gmail.com>
+//
+// This Source Code Form is subject to the terms of the
+// Mozilla Public License, v. 2.0. If a copy of the MPL was not
+// distributed with this file, You can obtain one at
+// http://mozilla.org/MPL/2.0/.
+
+
 package com.hydrogen;
 
 import java.io.IOException;
@@ -6,10 +14,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
-/**
- * Created by nathan on 1/13/16.
- */
-public class Bstream {
+
+public class Bstream implements Stream {
 
     private Socket socket;
     private InputStream inputStream;
@@ -33,6 +39,7 @@ public class Bstream {
         }
     }
 
+    @Override
     public byte[] read() throws ReadException {
         while (true) {
             // Don't kill the cpu
@@ -79,6 +86,7 @@ public class Bstream {
         }
     }
 
+    @Override
     public void write(byte[] buffer) throws IOException {
         byte[] frame = Frame.fromBuffer(buffer);
         try {
@@ -89,6 +97,7 @@ public class Bstream {
         }
     }
 
+    @Override
     public void close() throws IOException {
         if (!this.socket.isInputShutdown()) {
             this.socket.shutdownInput();

@@ -8,10 +8,11 @@
 
 package com.hydrogen;
 
+import java.io.IOException;
 
-public interface IHydrogen {
-    void onConnected();
-    void onDisconnected();
-    void onError(Exception e);
-    void onDataReceived(byte[] buffer);
+
+public interface Stream {
+    byte[] read() throws ReadException;
+    void write(byte[] buffer) throws IOException;
+    void close() throws IOException;
 }
