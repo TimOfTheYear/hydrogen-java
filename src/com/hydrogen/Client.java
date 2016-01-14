@@ -8,6 +8,8 @@
 
 package com.hydrogen;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ public class Client {
 
     private String host;
     private int port;
+    private boolean usingSSL;
 
     private boolean unexpectedDisconnect = false;
 
@@ -39,18 +42,17 @@ public class Client {
         }
 
         if (useSSL) {
-            throw new Exception("SSL not yet available");
+            SSLSocketFactory sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+            SSLSocket sslSocket = (SSLSocket)sslSocketFactory.createSocket(host, port);
+            this.stream = new SecureStream(sslSocket);
         } else {
-            try {
-                Socket socket = new Socket(host, port);
-                this.stream = new Bstream(socket);
-            } catch (Exception e) {
-                throw e;
-            }
+            Socket socket = new Socket(host, port);
+            this.stream = new Bstream(socket);
         }
 
         this.host = host;
         this.port = port;
+        this.usingSSL = useSSL;
 
         this.readerThread = new ReaderThread();
         this.readerThread.start();
@@ -106,12 +108,13 @@ public class Client {
             throw new NullPointerException("IHydrogen implementor was null");
         }
 
-        Socket socket;
-        try {
-            socket = new Socket(host, port);
+        if (usingSSL) {
+            SSLSocketFactory sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+            SSLSocket sslSocket = (SSLSocket)sslSocketFactory.createSocket(host, port);
+            this.stream = new SecureStream(sslSocket);
+        } else {
+            Socket socket = new Socket(host, port);
             this.stream = new Bstream(socket);
-        } catch (Exception e) {
-            return false;
         }
 
         this.host = host;
