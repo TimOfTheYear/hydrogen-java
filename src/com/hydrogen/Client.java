@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Client {
 
-    private Bstream stream;
+    private Stream stream;
     private IHydrogen implementor;
     private ReaderThread readerThread;
     private WriterThread writerThread;
@@ -33,17 +33,20 @@ public class Client {
         this.implementor = implementor;
     }
 
-    public void connectToHost(String host, int port) throws IOException, NullPointerException {
+    public void connectToHost(String host, int port, boolean useSSL) throws IOException, NullPointerException {
         if (this.implementor == null) {
             throw new NullPointerException("IHydrogen implementor was null");
         }
 
-        Socket socket;
-        try {
-            socket = new Socket(host, port);
-            this.stream = new Bstream(socket);
-        } catch (Exception e) {
-            throw e;
+        if (useSSL) {
+            // Not implemented
+        } else {
+            try {
+                Socket socket = new Socket(host, port);
+                this.stream = new Bstream(socket);
+            } catch (Exception e) {
+                throw e;
+            }
         }
 
         this.host = host;
