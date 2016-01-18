@@ -19,13 +19,9 @@ public class Main {
         Client client = new Client(hydrogenImplementor);
 
         try {
-            client.connectToHost("realtime.heystaxapp.com", 1338, true, false);
+            client.connectToHost("localhost", 1338, true, false);
 
             Thread.sleep(1000);
-
-            // Send a thing
-            final String payload = "{\"action\":100,\"version\":\"1.0.0\",\"data\":\"{\\\"id\\\":\\\"123456789\\\"}\"}";
-            client.write(payload.getBytes(Charset.forName("UTF-8")));
 
             // Disconnect from host
             client.close();
@@ -42,6 +38,10 @@ public class Main {
 
         public void onDisconnected() {
             System.out.println("onDisconnected");
+        }
+
+        public void onReconnectAttempt() {
+            System.out.println("onReconnectAttempt");
         }
 
         public void onError(Exception e) {
