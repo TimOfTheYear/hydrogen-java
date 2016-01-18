@@ -12,6 +12,7 @@ package com.hydrogen;
 public interface IHydrogen {
     void onConnected();
     void onDisconnected();
+    void onReconnectAttempt();
     void onError(Exception e);
     void onDataReceived(byte[] buffer);
 }

@@ -8,10 +8,13 @@
 
 package com.hydrogen;
 
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.Socket;
+import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -28,6 +31,7 @@ public class Client {
     private String host;
     private int port;
     private boolean usingSSL;
+    private boolean usingStrictCATrust;
 
     private boolean unexpectedDisconnect = false;
 
@@ -36,14 +40,41 @@ public class Client {
         this.implementor = implementor;
     }
 
-    public void connectToHost(String host, int port, boolean useSSL) throws Exception {
+    public void connectToHost(String host, int port, boolean useSSL, boolean useStrictCATrust) throws Exception {
         if (this.implementor == null) {
             throw new NullPointerException("IHydrogen implementor was null");
         }
 
         if (useSSL) {
-            SSLSocketFactory sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
-            SSLSocket sslSocket = (SSLSocket)sslSocketFactory.createSocket(host, port);
+            SSLSocket sslSocket;
+            if (useStrictCATrust) {
+                SSLSocketFactory sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+                sslSocket = (SSLSocket)sslSocketFactory.createSocket(host, port);
+            } else {
+                // Create a trust manager that does not validate certificate chains
+                TrustManager[] trustAllCerts = new TrustManager[] {
+                        new X509TrustManager() {
+                            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                                return new X509Certificate[0];
+                            }
+                            public void checkClientTrusted(
+                                    java.security.cert.X509Certificate[] certs, String authType) {
+                            }
+                            public void checkServerTrusted(
+                                    java.security.cert.X509Certificate[] certs, String authType) {
+                            }
+                        }
+                };
+
+                // Install the all-trusting trust manager
+                SSLContext sslContext = SSLContext.getInstance("SSL");
+                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+                SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+                sslSocket = (SSLSocket)sslSocketFactory.createSocket(host, port);
+            }
+
+            sslSocket.startHandshake();
             this.stream = new SecureStream(sslSocket);
         } else {
             Socket socket = new Socket(host, port);
@@ -53,6 +84,7 @@ public class Client {
         this.host = host;
         this.port = port;
         this.usingSSL = useSSL;
+        this.usingStrictCATrust = useStrictCATrust;
 
         this.readerThread = new ReaderThread();
         this.readerThread.start();
@@ -85,7 +117,7 @@ public class Client {
         // the stream has been disconnected unexpectedly, which will
         // trigger a reconnect loop
         try {
-            Thread.sleep(250);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             // Do nothing
         }
@@ -102,15 +134,43 @@ public class Client {
         this.implementor.onDisconnected();
     }
 
-    public boolean reconnectToHost(String host, int port) throws IOException, NullPointerException {
-        System.out.println("Attempting reconnect...");
+    public boolean reconnectToHost(String host, int port) throws IOException, NullPointerException, NoSuchAlgorithmException, KeyManagementException {
         if (this.implementor == null) {
             throw new NullPointerException("IHydrogen implementor was null");
         }
 
+        this.implementor.onReconnectAttempt();
+
         if (usingSSL) {
-            SSLSocketFactory sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
-            SSLSocket sslSocket = (SSLSocket)sslSocketFactory.createSocket(host, port);
+            SSLSocket sslSocket;
+            if (usingStrictCATrust) {
+                SSLSocketFactory sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+                sslSocket = (SSLSocket)sslSocketFactory.createSocket(host, port);
+            } else {
+                // Create a trust manager that does not validate certificate chains
+                TrustManager[] trustAllCerts = new TrustManager[] {
+                        new X509TrustManager() {
+                            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                                return new X509Certificate[0];
+                            }
+                            public void checkClientTrusted(
+                                    java.security.cert.X509Certificate[] certs, String authType) {
+                            }
+                            public void checkServerTrusted(
+                                    java.security.cert.X509Certificate[] certs, String authType) {
+                            }
+                        }
+                };
+
+                // Install the all-trusting trust manager
+                SSLContext sslContext = SSLContext.getInstance("SSL");
+                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+                SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+                sslSocket = (SSLSocket)sslSocketFactory.createSocket(host, port);
+            }
+
+            sslSocket.startHandshake();
             this.stream = new SecureStream(sslSocket);
         } else {
             Socket socket = new Socket(host, port);
@@ -236,9 +296,7 @@ public class Client {
                         } else {
                             numReconnectTries = 0;
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
 
@@ -254,5 +312,22 @@ public class Client {
         public void close() {
             this.keepAlive = false;
         }
+    }
+
+    private static void printSocketInfo(SSLSocket s) {
+        System.out.println("Socket class: "+s.getClass());
+        System.out.println("   Remote address = "
+                +s.getInetAddress().toString());
+        System.out.println("   Remote port = "+s.getPort());
+        System.out.println("   Local socket address = "
+                +s.getLocalSocketAddress().toString());
+        System.out.println("   Local address = "
+                +s.getLocalAddress().toString());
+        System.out.println("   Local port = "+s.getLocalPort());
+        System.out.println("   Need client authentication = "
+                +s.getNeedClientAuth());
+        SSLSession ss = s.getSession();
+        System.out.println("   Cipher suite = "+ss.getCipherSuite());
+        System.out.println("   Protocol = "+ss.getProtocol());
     }
 }

@@ -11,39 +11,28 @@ import com.hydrogen.Client;
 import com.hydrogen.IHydrogen;
 
 import java.nio.charset.Charset;
+import java.security.KeyStore;
 
 public class Main {
 
     public static void main(String [] args) {
         Client client = new Client(hydrogenImplementor);
 
-        // Connect to host
         try {
-            client.connectToHost("127.0.0.1", 1337);
+            client.connectToHost("realtime.heystaxapp.com", 1338, true, false);
+
+            Thread.sleep(1000);
+
+            // Send a thing
+            final String payload = "{\"action\":100,\"version\":\"1.0.0\",\"data\":\"{\\\"id\\\":\\\"123456789\\\"}\"}";
+            client.write(payload.getBytes(Charset.forName("UTF-8")));
+
+            // Disconnect from host
+            client.close();
+            Thread.sleep(2000);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        // Reconnect timeout for server close testing
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Send a thing
-        final String payload = "{\"action\":100,\"version\":\"1.0.0\",\"data\":\"{\\\"id\\\":\\\"123456789\\\"}\"}";
-        client.write(payload.getBytes(Charset.forName("UTF-8")));
-
-        // Response timeout to connect message...
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Disconnect from host
-        client.close();
     }
 
     public static IHydrogen hydrogenImplementor = new IHydrogen() {

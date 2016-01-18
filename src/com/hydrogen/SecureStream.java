@@ -41,7 +41,6 @@ public class SecureStream implements Stream {
     }
 
 
-
     @Override
     public byte[] read() throws ReadException {
         while (true) {
@@ -102,12 +101,6 @@ public class SecureStream implements Stream {
 
     @Override
     public void close() throws IOException {
-        if (!this.socket.isInputShutdown()) {
-            this.socket.shutdownInput();
-        }
-        if (!this.socket.isOutputShutdown()) {
-            this.socket.shutdownOutput();
-        }
         if (!this.socket.isClosed()) {
             this.socket.close();
         }
