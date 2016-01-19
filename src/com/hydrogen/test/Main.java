@@ -5,27 +5,34 @@
 // distributed with this file, You can obtain one at
 // http://mozilla.org/MPL/2.0/.
 
+
 package com.hydrogen.test;
 
 import com.hydrogen.Client;
 import com.hydrogen.IHydrogen;
 
 import java.nio.charset.Charset;
-import java.security.KeyStore;
+
 
 public class Main {
 
     public static void main(String [] args) {
+
+        // Create
         Client client = new Client(hydrogenImplementor);
 
         try {
-            client.connectToHost("localhost", 1338, true, false);
+            // Connect
+            client.connectToHost("localhost", 1337, true, false);
 
+            // Write a thing
+            final byte[] buffer = "ping".getBytes(Charset.forName("UTF-8"));
+
+            // Wait a bit for a response
             Thread.sleep(1000);
 
             // Disconnect from host
             client.close();
-            Thread.sleep(2000);
         } catch (Exception e) {
             e.printStackTrace();
         }

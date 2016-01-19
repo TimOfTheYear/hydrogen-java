@@ -5,52 +5,57 @@ Java based Hydrogen client
 ## Usage
 
 ~~~java
+import com.hydrogen.Client;
+import com.hydrogen.IHydrogen;
 
-public class Main
-{
-	public static void main(String [] args)	{
-		Client client = new Client(hydrogenImplementor);
+import java.nio.charset.Charset;
 
-        // Connect to host
+
+public class Main {
+
+    public static void main(String [] args) {
+
+        // Create
+        Client client = new Client(hydrogenImplementor);
+
         try {
-            client.connectToHost("127.0.0.1", 1337);
+            // Connect
+            client.connectToHost("localhost", 1337, true, false);
+
+            // Write a thing
+            final byte[] buffer = "ping".getBytes(Charset.forName("UTF-8"));
+
+            // Wait a bit for a response
+            Thread.sleep(1000);
+
+            // Disconnect from host
+            client.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        // Some buffer
-        byte[] buffer = new byte[4];
-		buffer[0] = (byte)'p';
-		buffer[1] = (byte)'i';
-		buffer[2] = (byte)'n';
-		buffer[3] = (byte)'g';
-
-        // Send a thing
-        client.write(buffer);
-
-		while (true) {
-			// Do all the things
-		}
-
-        // Disconnect from host
-        client.disconnect();
-	}
+    }
 
     public static IHydrogen hydrogenImplementor = new IHydrogen() {
         public void onConnected() {
-            // Called when the client connects
+            System.out.println("onConnected");
         }
 
         public void onDisconnected() {
-            // Called when the client has been disconnected
+            System.out.println("onDisconnected");
+        }
+
+        public void onReconnectAttempt() {
+            System.out.println("onReconnectAttempt");
         }
 
         public void onError(Exception e) {
-            // Called when an error has occured
+            System.out.println("onError: " + e.getMessage());
+            e.printStackTrace();
         }
 
         public void onDataReceived(byte[] buffer) {
-            // Called when data has been received from host
+            System.out.println("onDataReceived");
+            System.out.println("Received: " + new String(buffer));
         }
     };
 }
