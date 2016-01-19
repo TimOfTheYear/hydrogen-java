@@ -235,6 +235,7 @@ public class Client {
         @Override
         public void run() {
             queue = new ArrayList<>();
+
             while (keepAlive) {
                 try {
                     Thread.sleep(10);
@@ -242,11 +243,12 @@ public class Client {
                     continue;
                 }
 
+                this.queueLock.lock();
+
                 if (this.queue.size() < 1) {
                     continue;
                 }
 
-                this.queueLock.lock();
                 for (int x = 0; x < this.queue.size(); x++) {
                     try {
                         stream.write(this.queue.get(x));
@@ -263,6 +265,9 @@ public class Client {
         public void write(final byte[] buffer) {
             try {
                 this.queueLock.lock();
+                if (this.queue == null) {
+                    this.queue = new ArrayList<>();
+                }
                 this.queue.add(buffer);
                 this.queueLock.unlock();
             } catch (Exception e) {
