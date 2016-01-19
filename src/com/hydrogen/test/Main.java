@@ -23,10 +23,11 @@ public class Main {
 
         try {
             // Connect
-            client.connectToHost("localhost", 1337, true, false);
+            client.connectToHost("localhost", 1337, false, false);
 
             // Write a thing
             final byte[] buffer = "ping".getBytes(Charset.forName("UTF-8"));
+            client.write(buffer);
 
             // Wait a bit for a response
             Thread.sleep(1000);

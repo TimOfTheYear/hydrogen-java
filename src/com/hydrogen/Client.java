@@ -11,13 +11,10 @@ package com.hydrogen;
 import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 public class Client {
@@ -227,51 +224,49 @@ public class Client {
     }
 
     private class WriterThread extends Thread {
+        private ArrayList<byte[]> txQueue;
         private volatile boolean keepAlive = true;
 
-        private ArrayList<byte[]> queue;
-        private final Lock queueLock = new ReentrantLock();
+        private final Object queueLock = new Object();
+        private final Object keepAliveLock = new Object();
 
         @Override
         public void run() {
-            queue = new ArrayList<>();
+            txQueue = new ArrayList<>();
 
-            while (keepAlive) {
-                try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    continue;
-                }
-
-                this.queueLock.lock();
-
-                if (this.queue.size() < 1) {
-                    continue;
-                }
-
-                for (int x = 0; x < this.queue.size(); x++) {
-                    try {
-                        stream.write(this.queue.get(x));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        errorClose();
+            while (true) {
+                synchronized (this.keepAliveLock) {
+                    if (!this.keepAlive) {
+                        return;
                     }
                 }
-                this.queue = new ArrayList<>();
-                this.queueLock.unlock();
+
+                try {
+                    // CPU rest
+                    Thread.sleep(10);
+
+                    synchronized (this.queueLock) {
+                        if (this.txQueue.size() < 1) {
+                            continue;
+                        }
+
+                        for (int x = 0; x < this.txQueue.size(); x++) {
+                            stream.write(this.txQueue.get(x));
+                        }
+                        this.txQueue = new ArrayList<>();
+                    }
+                } catch (InterruptedException e) {
+                    continue;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    errorClose();
+                }
             }
         }
 
         public void write(final byte[] buffer) {
-            try {
-                this.queueLock.lock();
-                if (this.queue == null) {
-                    this.queue = new ArrayList<>();
-                }
-                this.queue.add(buffer);
-                this.queueLock.unlock();
-            } catch (Exception e) {
-                throw e;
+            synchronized (this.queueLock) {
+                this.txQueue.add(buffer);
             }
         }
 
