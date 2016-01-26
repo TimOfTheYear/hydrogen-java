@@ -232,7 +232,9 @@ public class Client {
 
         @Override
         public void run() {
-            txQueue = new ArrayList<>();
+            if (this.txQueue == null) {
+                this.txQueue = new ArrayList<>();
+            }
 
             while (true) {
                 synchronized (this.keepAliveLock) {
@@ -266,6 +268,9 @@ public class Client {
 
         public void write(final byte[] buffer) {
             synchronized (this.queueLock) {
+                if (this.txQueue == null) {
+                    this.txQueue = new ArrayList<>();
+                }
                 this.txQueue.add(buffer);
             }
         }
